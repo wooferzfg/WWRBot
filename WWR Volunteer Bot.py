@@ -146,11 +146,16 @@ async def CheckSheet():
         KeyColumnIndexes = [DateColumnIndex, ETColumnIndex, CommentatorIndex, TrackerIndex]
         
         CurrentTime = datetime.now(EasternTimeZone)
-        MaxPingTime = CurrentTime + timedelta(hours = AdvancePingTimeframe) 
+        MaxPingTime = CurrentTime + timedelta(hours = AdvancePingTimeframe)
 
         for row in CleanedRaceList.itertuples():
             try:
-                ETFullDateTime = EasternTimeZone.localize(datetime.strptime(f"{str(row[DateColumnIndex])} {str(row[ETColumnIndex])} {datetime.now().year}", "%b %d %I:%M%p %Y"))
+                MatchMonth = datetime.strptime(row[DateColumnIndex], "%b %d").month
+                CurMonth = datetime.now().month
+                if MatchMonth < CurMonth: # if the number of the month the match takes place in is less than the number of the current month, it means the match takes place next year, so we need to adjust it accordingly
+                    ETFullDateTime = EasternTimeZone.localize(datetime.strptime(f"{str(row[DateColumnIndex])} {str(row[ETColumnIndex])} {datetime.now().year + 1}", "%b %d %I:%M%p %Y"))
+                else: # otherwise, the match is in the current year
+                    ETFullDateTime = EasternTimeZone.localize(datetime.strptime(f"{str(row[DateColumnIndex])} {str(row[ETColumnIndex])} {datetime.now().year}", "%b %d %I:%M%p %Y"))
             except:
                 continue
 
